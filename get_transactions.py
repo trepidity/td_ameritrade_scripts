@@ -1,17 +1,21 @@
 import os
 import pprint
 import sqlite3
-from datetime import date
+from datetime import datetime
+from datetime import timedelta
 from td.client import TDClient
 
-start_date = date.today()
+# Start_date initialized to none to pull all records
+start_date = ''
+
 pp = pprint.PrettyPrinter()
 conn = sqlite3.connect(os.environ.get('DB_NAME'))
+
 cur = conn.cursor()
 cur.execute('SELECT MAX(transactionDate) FROM transactions limit 1')
 row = cur.fetchone()
-if row is None:
-    start_date = row[0][0:10]
+if row[0] is not None:
+    start_date = (datetime.strptime(row[0], "%Y-%m-%dT%H:%M:%S+0000") + timedelta(days=1)).strftime("%Y-%m-%d")
 
 # Create a new session, credentials path is required.
 TDSession = TDClient(
@@ -23,7 +27,7 @@ TDSession = TDClient(
 # Login to the session
 TDSession.login()
 
-# `get_transactions` Endpoint. Should not return an error
+# get transactions. If first run, start_date is empty.
 transaction_data_multi = TDSession.get_transactions(
     account=os.environ.get('ACCOUNT_ID'),
     transaction_type='TRADE',
@@ -40,8 +44,6 @@ def key_val(element, name):
 
         return ''
 
-
-print("Total records returned.....", len(transaction_data_multi))
 
 # type, subAccount, orderId, netAmount, transactionDate, orderDate, transactionSubType, transactionId, amount, price,
 # cost, symbol, underlyingSymbol, optionExpirationDate, putCall, cusip, assetType
@@ -74,3 +76,5 @@ conn.commit()
 # We can also close the connection if we are done with it.
 # Just be sure any changes have been committed or they will be lost.
 conn.close()
+
+print("Total records returned.....", len(transaction_data_multi))
