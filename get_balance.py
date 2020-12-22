@@ -2,6 +2,7 @@ import pprint
 import os
 import sqlite3
 from td.client import TDClient
+from datetime import datetime
 
 pp = pprint.PrettyPrinter()
 conn = sqlite3.connect(os.environ.get('DB_NAME'))
@@ -20,7 +21,7 @@ TDSession.login()
 accounts = TDSession.get_accounts(account=os.environ.get('ACCOUNT_ID'))
 a = accounts['securitiesAccount']
 b = accounts['securitiesAccount']['currentBalances']
-conn.execute('insert into accounts values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [a['type'], a['accountId'], b['accruedInterest'], b['cashBalance'], b['longOptionMarketValue'], b['liquidationValue'], b['longMarketValue'], b['availableFunds'], b['buyingPower'], b['dayTradingBuyingPower'], b['equity'], b['equityPercentage'], b['longMarginValue'], b['maintenanceRequirement'], b['marginBalance']])
+conn.execute('insert into accounts values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [datetime.today(),a['type'], a['accountId'], b['accruedInterest'], b['cashBalance'], b['longOptionMarketValue'], b['liquidationValue'], b['longMarketValue'], b['availableFunds'], b['buyingPower'], b['dayTradingBuyingPower'], b['equity'], b['equityPercentage'], b['longMarginValue'], b['maintenanceRequirement'], b['marginBalance']])
 
 # Save (commit) the changes
 conn.commit()
